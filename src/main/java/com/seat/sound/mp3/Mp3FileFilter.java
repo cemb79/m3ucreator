@@ -2,13 +2,19 @@ package com.seat.sound.mp3;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
 
-public class Mp3FileFilter implements FilenameFilter {
+public class Mp3FileFilter implements FileFilter {
 
 	@Override
-	public boolean accept(File dir, String name) {
-		return name.endsWith("mp3");
+	public boolean accept(File file) {
+		boolean result = false;
+		if(file.isDirectory()) {
+			result = true;
+		} else if(file.getName().endsWith("mp3")) {
+			result = true;
+		} else {
+			result = false;
+		}
+		return result;
 	}
-
 }
