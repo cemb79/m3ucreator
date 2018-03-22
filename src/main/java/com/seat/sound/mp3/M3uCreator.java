@@ -54,22 +54,24 @@ public class M3uCreator {
 			logger.info(genre);
 		}
 		File directoryOrg = new File(dirOrigin);
-		List<File> songList = getSongsByGenere(directoryOrg, genres);
+		List<SongMetadata> songList = getSongsByGenere(directoryOrg, genres);
 		logger.info(() -> "Song list obtained: " + songList.size());
 		createM3uList(songList, listName);
 	}
 	
-	public List<File> getSongsByGenere(File directoryOrg, String[] generes) {
+	public List<SongMetadata> getSongsByGenere(File directoryOrg, String[] generes) {
 		File[] files = directoryOrg.listFiles(new Mp3FileFilter());
-		ArrayList<File> songList = new ArrayList<>();
+		ArrayList<SongMetadata> songList = new ArrayList<>();
 		
 		if(files != null) {
 			for(File file : files) {
 				if(file.isDirectory()) {
 					songList.addAll(getSongsByGenere(file, generes));
 				} else {
-					if(isSongInGenere(file, generes)) {
-						songList.add(file);
+					Metadata metadata = getMetadata(file);
+					if(isSongInGenere(generes, metadata)) {
+						SongMetadata songMeta = createSongMetadata(file, metadata);
+						songList.add(songMeta);
 					}
 				}
 			}
@@ -80,9 +82,21 @@ public class M3uCreator {
 		return songList;
 	}
 
-	private boolean isSongInGenere(File file, String[] genres) {
+	private SongMetadata createSongMetadata(File file, Metadata metadata) {
+		SongMetadata meta = new SongMetadata();
+		String artist = metadata.get("xmpDM:artist");
+		meta.setArtist(artist);
+		String title = metadata.get("title");
+		meta.setTitle(title);
+		String durationMs = metadata.get("xmpDM:duration");
+		double durMs = Double.parseDouble(durationMs);
+		meta.setDuration((int)durMs / 1000);
+		meta.setSong(file);
+		return meta;
+	}
+
+	private boolean isSongInGenere(String[] genres, Metadata metadata) {
 		boolean result = false;
-		Metadata metadata = getMetadata(file);
 		String songGenre = metadata.get("xmpDM:genre");
 		if(songGenre != null) {
 			for(String genre : genres) {
@@ -108,7 +122,7 @@ public class M3uCreator {
 		return metadata;
 	}
 
-	public void createM3uList(List<File> songList, String listName) {
+	public void createM3uList(List<SongMetadata> songList, String listName) {
 		String m3uFile = listName + ".m3u";
 		if(songList.isEmpty()) {
 			logger.info("No songs to export");
@@ -116,8 +130,12 @@ public class M3uCreator {
 			logger.info(() -> "Creating m3u file: " + m3uFile);
 			try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m3uFile), "utf-8"))) {
 				writer.write("#EXTM3U\n");
-				for(File song : songList) {
-					writer.write(song.getAbsolutePath());
+				for(SongMetadata song : songList) {
+					if(song.getArtist() != null) {
+						writer.write(getSongMetadata(song));
+						writer.write("\n");
+					}
+					writer.write(song.getSong().getAbsolutePath());
 					writer.write("\n");
 				}
 				logger.info("File list created");
@@ -125,5 +143,9 @@ public class M3uCreator {
 				logger.warning(e.getMessage());
 			}
 		}
+	}
+
+	private String getSongMetadata(SongMetadata song) {
+		return String.format("#EXTINF:%d, %s - %s", song.getDuration(), song.getArtist(), song.getTitle());
 	}
 }
