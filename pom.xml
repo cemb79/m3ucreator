@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!--<parent>
+	<parent>
 		<groupId>net.emida</groupId>
 		<artifactId>library</artifactId>
 		<version>1.18</version>
-	</parent>-->
+	</parent>
 
 	<groupId>com.seat.sound</groupId>
 	<artifactId>m3uCreator</artifactId>
@@ -54,7 +54,7 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<build>
+	<!-- <build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -66,6 +66,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-	</build>
+	</build> -->
 	
 </project>
