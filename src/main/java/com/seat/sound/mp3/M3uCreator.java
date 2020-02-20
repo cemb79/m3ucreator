@@ -68,7 +68,7 @@ public class M3uCreator {
 				if(file.isDirectory()) {
 					songList.addAll(getSongsByGenere(file, generes));
 				} else {
-					Metadata metadata = getMetadata(file);
+					Metadata metadata = Mp3Util.getMetadata(file);
 					if(isSongInGenere(generes, metadata)) {
 						SongMetadata songMeta = createSongMetadata(file, metadata);
 						songList.add(songMeta);
@@ -107,19 +107,6 @@ public class M3uCreator {
 			}
 		}
 		return result;
-	}
-
-	private Metadata getMetadata(File file) {
-		Metadata metadata = new Metadata();
-		try (InputStream input = new FileInputStream(file)){
-			ContentHandler handler = new DefaultHandler();
-			Parser parser = new Mp3Parser();
-			ParseContext parseCtx = new ParseContext();
-			parser.parse(input, handler, metadata, parseCtx);
-		} catch (IOException | SAXException | TikaException e) {
-			logger.warning(e.getMessage());
-		} 
-		return metadata;
 	}
 
 	public void createM3uList(List<SongMetadata> songList, String listName) {
